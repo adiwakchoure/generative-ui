@@ -10,20 +10,20 @@ import { Header } from '@/components/header';
 import { Providers } from '@/components/providers';
 
 const meta = {
-  title: 'AI RSC Demo',
+  title: 'Mentat',
   description:
-    'Demo of an interactive financial assistant built using Next.js and Vercel AI SDK.',
+    'Demo of an interactive market research assistant.',
 };
 export const metadata: Metadata = {
   ...meta,
   title: {
-    default: 'AI RSC Demo',
-    template: `%s - AI RSC Demo`,
+    default: 'Mentat',
+    template: `%s - Mentat`,
   },
   icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon-16x16.png',
-    apple: '/apple-touch-icon.png',
+    icon: 'https://media.licdn.com/dms/image/D4E0BAQG_A6L_nHk4fg/company-logo_200_200/0/1695848222332?e=1718236800&v=beta&t=E8YpoBlEHcYRCMnITUFkjJwPv7t9v2YsexvUii_4cXM',
+    shortcut: 'https://media.licdn.com/dms/image/D4E0BAQG_A6L_nHk4fg/company-logo_200_200/0/1695848222332?e=1718236800&v=beta&t=E8YpoBlEHcYRCMnITUFkjJwPv7t9v2YsexvUii_4cXM',
+    apple: 'https://media.licdn.com/dms/image/D4E0BAQG_A6L_nHk4fg/company-logo_200_200/0/1695848222332?e=1718236800&v=beta&t=E8YpoBlEHcYRCMnITUFkjJwPv7t9v2YsexvUii_4cXM',
   },
   twitter: {
     ...meta,
@@ -64,7 +64,7 @@ export default function RootLayout({
           >
             <div className="flex flex-col min-h-screen">
               <Header />
-              <main className="flex flex-col flex-1 bg-muted/50 dark:bg-background">
+              <main className="flex flex-col flex-1 bg-muted/50">
                 {children}
               </main>
             </div>
