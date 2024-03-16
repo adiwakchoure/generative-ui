@@ -2,7 +2,7 @@
 
 import { useActions, useUIState } from 'ai/rsc';
 
-import type { AI } from '../../app/action';
+import type { AI } from '../../app/chat/action';
 
 export function Stocks({ stocks }: { stocks: any[] }) {
   const [, setMessages] = useUIState<typeof AI>();

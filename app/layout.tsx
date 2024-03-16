@@ -1,16 +1,16 @@
 import type { Metadata } from 'next';
-import { GeistMono } from 'geist/font/mono';
-import { GeistSans } from 'geist/font/sans';
+import { forum, raleway } from './fonts'
+
 import { Analytics } from '@vercel/analytics/react';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 
-import { AI } from './action';
-import { Header } from '@/components/header';
+import { AI } from './chat/action';
 import { Providers } from '@/components/providers';
 
 const meta = {
   title: 'Mentat',
+
   description:
     'Demo of an interactive market research assistant.',
 };
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
 export const viewport = {
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' },
+    // { media: '(prefers-color-scheme: dark)', color: 'black' },
   ],
 };
 
@@ -50,20 +50,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={raleway.className} suppressHydrationWarning>
       <body
-        className={`font-sans antialiased ${GeistSans.variable} ${GeistMono.variable}`}
+        className={`font-sans antialiased`}
       >
         <Toaster />
         <AI>
           <Providers
             attribute="class"
-            defaultTheme="system"
+            defaultTheme="light"
             enableSystem
             disableTransitionOnChange
           >
             <div className="flex flex-col min-h-screen">
-              <Header />
               <main className="flex flex-col flex-1 bg-muted/50">
                 {children}
               </main>
