@@ -119,7 +119,7 @@ async function submitUserMessage(content: string) {
       {
         role: 'system',
         content: `\
-You are a stock trading conversation bot  called "Mentat" and you can help users buy stocks, step by step.
+You are a stock trading conversation bot and you can help users buy stocks, step by step.
 You and the user can discuss stock prices and the user can adjust the amount of stocks they want to buy, or place an order, in the UI.
 
 Messages inside [] means that it's a UI element or a user event. For example:
@@ -133,7 +133,6 @@ If you want to show events, call \`get_events\`.
 If the user wants to sell stock, or complete another impossible task, respond that you are a demo and cannot do that.
 
 Besides that, you can also chat with users and do some calculations if needed.`,
-
       },
       ...aiState.get().map((info: any) => ({
         role: info.role,
