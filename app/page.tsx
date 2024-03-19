@@ -35,10 +35,20 @@ function InputWithButton() {
     fetcher
   );
 
-  const handleSearch = () => {
-    if (searchTerm.trim() === "") return;
-    setLoading(true);
-  };
+  const handleSearch = async () => {
+  if (searchTerm.trim() === "") return;
+  setLoading(true);
+
+  const response = await fetch(`http://localhost:8000/query/send?query=${encodeURIComponent(searchTerm)}`, {
+    method: 'POST',
+  });
+
+  if (response.ok) {
+    const data = await response.json();
+    const ulid = data;
+    router.push(`/chat?query=${ulid}`);
+  }
+};
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
@@ -46,12 +56,12 @@ function InputWithButton() {
     }
   };
 
-  useEffect(() => {
-    if (data) {
-      console.log(data);
-      router.push(`/chat`);
-    }
-  }, [data, router, pathname]);
+  // useEffect(() => {
+  //   if (data) {
+  //     console.log(data);
+  //     router.push(`/chat`);
+  //   }
+  // }, [data, router, pathname]);
 
   return (
     <div className="flex flex-row w-full max-w-md items-center space-x-2">

@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Header } from '@/components/header';
+import { useSearchParams } from 'next/navigation';
+import useSWR from 'swr'; // Import useSWR
 
 import { useUIState, useActions } from 'ai/rsc';
 import { UserMessage } from '@/components/llm-stocks/message';
@@ -21,6 +23,8 @@ import { Button } from '@/components/ui/button';
 import { ChatList } from '@/components/chat-list';
 import { EmptyScreen } from '@/components/empty-screen';
 
+const fetcher = (url) => fetch(url).then((res) => res.json());
+
 export default function Page() {
   const [messages, setMessages] = useUIState<typeof AI>();
   const { submitUserMessage } = useActions<typeof AI>();
@@ -28,7 +32,41 @@ export default function Page() {
   const { formRef, onKeyDown } = useEnterSubmit();
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
+  const searchParams = useSearchParams();
+  const query_id = searchParams.get('query');
+
+  const { data, error } = useSWR(
+    query_id ? `http://localhost:8000/query/fetch/${query_id}` : null,
+    fetcher
+  );
+
   useEffect(() => {
+    console.log('query_id:', query_id);
+
+    if (data) {
+      const formattedData = {
+        query: data.query,
+        insights: data.insights.map((insight) => ({
+          content: insight.content,
+          impact: insight.impact,
+          confidence: insight.confidence,
+          query_id: insight.query_id,
+          title: insight.title,
+          id: insight.id,
+          category: insight.category,
+          source: insight.source,
+          created_at: insight.created_at,
+          entity: insight.entity,
+        })),
+      };
+
+      console.log(formattedData);
+    }
+
+    if (error) {
+      console.error('Error fetching data:', error);
+    }
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === '/') {
         if (
@@ -50,11 +88,12 @@ export default function Page() {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [inputRef]);
+  }, [inputRef, query_id, data, error]);
 
   return (
     <div>
       <Header />
+      <SearchBar />
       <div className="pb-[200px] pt-4 md:pt-10">
         {messages.length ? (
           <>
@@ -178,4 +217,9 @@ export default function Page() {
       </div>
     </div>
   );
+}
+
+function SearchBar() {
+  const searchParams = useSearchParams();
+  const queryId = searchParams.get('query');
 }
