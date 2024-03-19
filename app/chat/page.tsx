@@ -1,92 +1,89 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import { Header } from '@/components/header';
-import { useSearchParams } from 'next/navigation';
-import useSWR from 'swr'; // Import useSWR
+import { useEffect, useRef, useState } from "react";
+import { Header } from "@/components/header";
+import { useSearchParams } from "next/navigation";
+import useSWR from "swr"; // Import useSWR
 
-import { useUIState, useActions } from 'ai/rsc';
-import { UserMessage } from '@/components/llm-stocks/message';
+import { useUIState, useActions } from "ai/rsc";
+import { UserMessage } from "@/components/llm-stocks/message";
 
-import { type AI } from './action';
-import { ChatScrollAnchor } from '@/lib/hooks/chat-scroll-anchor';
-import { FooterText } from '@/components/footer';
-import Textarea from 'react-textarea-autosize';
-import { useEnterSubmit } from '@/lib/hooks/use-enter-submit';
+import { type AI } from "./action";
+import { ChatScrollAnchor } from "@/lib/hooks/chat-scroll-anchor";
+import { FooterText } from "@/components/footer";
+import Textarea from "react-textarea-autosize";
+import { useEnterSubmit } from "@/lib/hooks/use-enter-submit";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { IconArrowElbow, IconPlus } from '@/components/ui/icons';
-import { Button } from '@/components/ui/button';
-import { ChatList } from '@/components/chat-list';
-import { EmptyScreen } from '@/components/empty-screen';
+} from "@/components/ui/tooltip";
+import { IconArrowElbow, IconPlus } from "@/components/ui/icons";
+import { Button } from "@/components/ui/button";
+import { ChatList } from "@/components/chat-list";
+import { EmptyScreen } from "@/components/empty-screen";
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
 export default function Page() {
+  function handleKeyDown(e: KeyboardEvent) {
+    if (e.key === "/") {
+      if (
+        e.target &&
+        ["INPUT", "TEXTAREA"].includes((e.target as any).nodeName)
+      ) {
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      if (inputRef?.current) {
+        inputRef.current.focus();
+      }
+    }
+  }
+
   const [messages, setMessages] = useUIState<typeof AI>();
   const { submitUserMessage } = useActions<typeof AI>();
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const { formRef, onKeyDown } = useEnterSubmit();
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const searchParams = useSearchParams();
-  const query_id = searchParams.get('query');
+  const query_id = searchParams.get("query");
 
   const { data, error } = useSWR(
     query_id ? `http://localhost:8000/query/fetch/${query_id}` : null,
     fetcher
   );
 
+  let [userQuery, setUserQuery] = useState("");
+  let [followUpQuestions, setFollowUpQuestions] = useState([]);
+  let [elaborateAnswer, setElaborateAnswer] = useState("");
+
   useEffect(() => {
-    console.log('query_id:', query_id);
-
     if (data) {
-      const formattedData = {
-        query: data.query,
-        insights: data.insights.map((insight) => ({
-          content: insight.content,
-          impact: insight.impact,
-          confidence: insight.confidence,
-          query_id: insight.query_id,
-          title: insight.title,
-          id: insight.id,
-          category: insight.category,
-          source: insight.source,
-          created_at: insight.created_at,
-          entity: insight.entity,
-        })),
-      };
-
-      console.log(formattedData);
+      setUserQuery(data.query);
+      setElaborateAnswer(data.insights[0]?.content || "");
+      setFollowUpQuestions(
+        data.insights.slice(0, 2).map((insight) => ({
+          heading: insight.title,
+          message: insight.title,
+        }))
+      );
     }
+  }, [data]);
+
+  useEffect(() => {
+    console.log("query_id:", query_id);
 
     if (error) {
-      console.error('Error fetching data:', error);
+      console.error("Error fetching data:", error);
     }
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === '/') {
-        if (
-          e.target &&
-          ['INPUT', 'TEXTAREA'].includes((e.target as any).nodeName)
-        ) {
-          return;
-        }
-        e.preventDefault();
-        e.stopPropagation();
-        if (inputRef?.current) {
-          inputRef.current.focus();
-        }
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [inputRef, query_id, data, error]);
 
@@ -101,9 +98,12 @@ export default function Page() {
           </>
         ) : (
           <EmptyScreen
-            submitMessage={async message => {
+            userQuery={userQuery}
+            elaborateAnswer={elaborateAnswer}
+            followUpQuestions={followUpQuestions}
+            submitMessage={async (message) => {
               // Add user message UI
-              setMessages(currentMessages => [
+              setMessages((currentMessages) => [
                 ...currentMessages,
                 {
                   id: Date.now(),
@@ -113,7 +113,7 @@ export default function Page() {
 
               // Submit and get response message
               const responseMessage = await submitUserMessage(message);
-              setMessages(currentMessages => [
+              setMessages((currentMessages) => [
                 ...currentMessages,
                 responseMessage,
               ]);
@@ -132,15 +132,15 @@ export default function Page() {
 
                 // Blur focus on mobile
                 if (window.innerWidth < 600) {
-                  e.target['message']?.blur();
+                  e.target["message"]?.blur();
                 }
 
                 const value = inputValue.trim();
-                setInputValue('');
+                setInputValue("");
                 if (!value) return;
 
                 // Add user message UI
-                setMessages(currentMessages => [
+                setMessages((currentMessages) => [
                   ...currentMessages,
                   {
                     id: Date.now(),
@@ -151,7 +151,7 @@ export default function Page() {
                 try {
                   // Submit and get response message
                   const responseMessage = await submitUserMessage(value);
-                  setMessages(currentMessages => [
+                  setMessages((currentMessages) => [
                     ...currentMessages,
                     responseMessage,
                   ]);
@@ -168,7 +168,7 @@ export default function Page() {
                       variant="outline"
                       size="icon"
                       className="absolute left-0 w-8 h-8 p-0 rounded-full top-4 bg-background sm:left-4"
-                      onClick={e => {
+                      onClick={(e) => {
                         e.preventDefault();
                         window.location.reload();
                       }}
@@ -192,7 +192,7 @@ export default function Page() {
                   name="message"
                   rows={1}
                   value={inputValue}
-                  onChange={e => setInputValue(e.target.value)}
+                  onChange={(e) => setInputValue(e.target.value)}
                 />
                 <div className="absolute right-0 top-4 sm:right-4">
                   <Tooltip>
@@ -200,7 +200,7 @@ export default function Page() {
                       <Button
                         type="submit"
                         size="icon"
-                        disabled={inputValue === ''}
+                        disabled={inputValue === ""}
                       >
                         <IconArrowElbow />
                         <span className="sr-only">Send message</span>
@@ -221,5 +221,5 @@ export default function Page() {
 
 function SearchBar() {
   const searchParams = useSearchParams();
-  const queryId = searchParams.get('query');
+  const queryId = searchParams.get("query");
 }
